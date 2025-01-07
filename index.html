@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Camera + GLB Example</title>
+  <style>
+    /* Reset margins/padding */
+    html, body {
+      margin: 0; 
+      padding: 0; 
+      height: 100%; 
+      overflow: hidden;
+      background-color: #000;
+    }
+    /* Video fills the entire background */
+    #cameraFeed {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%; 
+      height: 100%;
+      object-fit: cover; /* scale the video to cover the area */
+      z-index: -1;       /* behind the 3D canvas */
+    }
+    /* Canvas on top of the video */
+    #three-canvas {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* (Optional) if you want any overlay text or instruction */
+    #instructions {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      color: #fff;
+      font-family: sans-serif;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Camera feed in the background -->
+  <video id="cameraFeed" autoplay muted playsinline></video>
+  
+  <!-- Some text to clarify what's happening -->
+  <div id="instructions">
+    <p>Camera feed as background, GLB model in center.</p>
+  </div>
+
+  <!-- The 3D scene is rendered here -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- Three.js and GLTFLoader from a CDN -->
+  <script src="https://unpkg.com/three@0.153.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.153.0/examples/jsm/loaders/GLTFLoader.js"></script>
+
+  <script>
+    // 1. CAMERA FEED SETUP
+    const video = document.getElementById('cameraFeed');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error('Camera access denied:', err);
+        alert('Could not access camera. Use HTTPS and allow permissions.');
+      });
+
+    // 2. THREE.JS SETUP
+    const canvas = document.getElementById('three-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    const scene = new THREE.Scene();
+
+    // Camera: simple perspective
+    const camera = new THREE.PerspectiveCamera(
+      70,
+      window.innerWidth / window.innerHeight,
+      0.01,
+      100
+    );
+    camera.position.z = 2; // Pull back a little so we can see the model
+
+    // Basic lighting so model is visible
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+
+    // 3. LOAD THE GLB MODEL
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      'chair.glb',            // path to your .glb file
+      gltf => {
+        const model = gltf.scene;
+        model.scale.set(0.5, 0.5, 0.5);   // adjust scale if needed
+        scene.add(model);
+      },
+      xhr => {
+        console.log( (xhr.loaded / xhr.total * 100) + '% loaded');
+      },
+      err => {
+        console.error('Error loading GLB:', err);
+      }
+    );
+
+    // 4. ANIMATION LOOP
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Optionally rotate the model every frame (if you want a spin)
+      // scene.children.forEach(child => {
+      //   if (child.isScene) child.rotation.y += 0.01;
+      // });
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // 5. HANDLE RESIZE
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+  </script>
+</body>
+</html>
