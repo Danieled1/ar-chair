@@ -5,43 +5,22 @@
   <meta charset="UTF-8" />
   <title>Camera + GLB Example</title>
   <style>
-    /* Reset margins/padding */
+    /* Make the video fill the entire viewport */
     html, body {
-      margin: 0; 
-      padding: 0; 
-      height: 100%; 
-      overflow: hidden;
-      background-color: #000;
+      margin: 0;
+      padding: 0;
+      height: 100%;
     }
-    /* Video fills the entire background */
+  
     #cameraFeed {
       position: fixed;
-      top: 0; 
-      left: 0;
-      width: 100%; 
-      height: 100%;
-      object-fit: cover; /* scale the video to cover the area */
-      z-index: -1;       /* behind the 3D canvas */
-    }
-    /* Canvas on top of the video */
-    #three-canvas {
-      position: fixed;
-      top: 0; 
+      top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-    }
-    /* (Optional) if you want any overlay text or instruction */
-    #instructions {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      color: #fff;
-      font-family: sans-serif;
-      background: rgba(0,0,0,0.3);
-      padding: 0.5rem;
-      border-radius: 0.25rem;
-      z-index: 2;
+      object-fit: cover;  /* ensures the video covers the container */
+      z-index: -1;        /* if you have overlays on top */
+      display: block;     /* ensures no inline spacing issues */
     }
   </style>
 </head>
